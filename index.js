@@ -49,7 +49,7 @@ async function updateGist(stats) {
       gist_id: gistId,
       files: {
         [filename]: {
-          filename: `📊 Waka Time`,
+          filename: `📊 Weekly Development Stats`,
           content: lines.join("\n")
         }
       }
