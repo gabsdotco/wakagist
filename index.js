@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const { WakaTimeClient, RANGE } = require("wakatime-client");
 const Octokit = require("@octokit/rest");
 
@@ -9,7 +10,6 @@ const {
 } = process.env;
 
 const wakatime = new WakaTimeClient(wakatimeApiKey);
-
 const octokit = new Octokit({ auth: `token ${githubToken}` });
 
 async function main() {
@@ -19,13 +19,14 @@ async function main() {
 
 async function updateGist(stats) {
   let gist;
+  let lines = [];
+
   try {
     gist = await octokit.gists.get({ gist_id: gistId });
   } catch (error) {
     console.error(`Unable to get gist\n${error}`);
   }
 
-  const lines = [];
   for (let i = 0; i < Math.min(stats.data.languages.length, 5); i++) {
     const data = stats.data.languages[i];
     const { name, percent, text: time } = data;
@@ -43,7 +44,6 @@ async function updateGist(stats) {
   if (lines.length == 0) return;
 
   try {
-    // Get original filename to update that same file
     const filename = Object.keys(gist.data.files)[0];
     await octokit.gists.update({
       gist_id: gistId,
@@ -64,10 +64,11 @@ function generateBarChart(percent, size) {
 
   const frac = Math.floor((size * 8 * percent) / 100);
   const barsFull = Math.floor(frac / 8);
+  const semi = frac % 8;
+
   if (barsFull >= size) {
     return syms.substring(8, 9).repeat(size);
   }
-  const semi = frac % 8;
 
   return [syms.substring(8, 9).repeat(barsFull), syms.substring(semi, semi + 1)]
     .join("")
